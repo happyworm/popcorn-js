@@ -1,7 +1,7 @@
 test( "Popcorn wikipedia Plugin", function() {
 
   var popped = Popcorn( "#video" ),
-      expects = 14,
+      expects = 13,
       count = 0,
       theArticle = document.getElementById( "wikidiv" );
 
@@ -87,15 +87,27 @@ test( "Popcorn wikipedia Plugin", function() {
   });
 
   // empty track events should be safe
-  Popcorn.plugin.debug = false;
-  popped.wikipedia({});
-
-  // debug should log errors on empty track events
   Popcorn.plugin.debug = true;
-  try {
-    popped.wikipedia({});
-  } catch( e ) {
-    ok( true, "empty event was caught by debug" );
-    plus();
+  popped.wikipedia({});
+});
+
+asyncTest( "Overriding default toString", 2, function() {
+  var p = Popcorn( "#video" ),
+      srcText = "http://en.wikipedia.org/wiki/Jungle",
+      lastEvent;
+
+  function testLastEvent( compareText, message ) {
+    lastEvent = p.getTrackEvent( p.getLastTrackEventId() );
+    equal( lastEvent.toString(), compareText, message );
   }
+
+  p.wikipedia({
+    src: srcText
+  });
+  testLastEvent( srcText, "Custom text displayed with toString" );
+
+  p.wikipedia({});
+  testLastEvent( "http://en.wikipedia.org/wiki/Cat", "Custom text displayed with toString using default" );
+
+  start();
 });

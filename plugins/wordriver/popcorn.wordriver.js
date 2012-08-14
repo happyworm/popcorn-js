@@ -71,13 +71,13 @@
         options: {
           start: {
             elem: "input",
-            type: "text",
-            label: "In"
+            type: "number",
+            label: "Start"
           },
           end: {
             elem: "input",
-            type: "text",
-            label: "Out"
+            type: "number",
+            label: "End"
           },
           target: "wordriver-container",
           text: {
@@ -97,10 +97,6 @@
       },
 
       _setup: function( options ) {
-
-        if ( !document.getElementById( options.target ) && Popcorn.plugin.debug ) {
-          throw new Error( "target container doesn't exist" );
-        }
 
         options._duration = options.end - options.start;
         options._container = container[ options.target ] || setupContainer( options.target );

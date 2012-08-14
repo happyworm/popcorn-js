@@ -43,13 +43,13 @@ var wikiCallback;
       options:{
         start: {
           elem: "input",
-          type: "text",
-          label: "In"
+          type: "number",
+          label: "Start"
         },
         end: {
           elem: "input",
-          type: "text",
-          label: "Out"
+          type: "number",
+          label: "End"
         },
         lang: {
           elem: "input",
@@ -61,7 +61,7 @@ var wikiCallback;
         src: {
           elem: "input", 
           type: "url", 
-          label: "Src",
+          label: "Wikipedia URL",
           "default": "http://en.wikipedia.org/wiki/Cat"
         },
         title: {
@@ -73,8 +73,8 @@ var wikiCallback;
         },
         numberofwords: {
           elem: "input",
-          type: "text",
-          label: "Num Of Words",
+          type: "number",
+          label: "Number of Words",
           "default": "200",
           optional: true
         },
@@ -130,10 +130,11 @@ var wikiCallback;
       if ( options.src ) {
         Popcorn.getScript( "//" + options.lang + ".wikipedia.org/w/api.php?action=parse&props=text&redirects&page=" +
           options.src.slice( options.src.lastIndexOf( "/" ) + 1 )  + "&format=json&callback=wikiCallback" + _guid );
-      } else if ( Popcorn.plugin.debug ) {
-        throw new Error( "Wikipedia plugin needs a 'src'" );
       }
 
+      options.toString = function() {
+        return options.src || options._natives.manifest.options.src[ "default" ];
+      };
     },
     /**
      * @member wikipedia

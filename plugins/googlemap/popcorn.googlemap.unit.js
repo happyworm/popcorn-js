@@ -54,7 +54,11 @@ test( "Popcorn Google Map Plugin", function() {
     heading: "180",
     pitch: "1",
 	  interval: 1000,
-	  tween: "York university"
+	  tween: "York university",
+    onmaploaded: function( options, map ) {
+      ok( map === options._map && !!map, "Map was loaded and attached to the plugin." );
+      plus();
+    }
   })
   .volume( 0 );
 
@@ -97,17 +101,8 @@ test( "Popcorn Google Map Plugin", function() {
   });
 
   // empty track events should be safe
-  Popcorn.plugin.debug = false;
-  popped.googlemap({});
-
-  // debug should log errors on empty track events
   Popcorn.plugin.debug = true;
-  try {
-    popped.googlemap({});
-  } catch( e ) {
-    ok( true, "empty event was caught by debug" );
-    plus();
-  }
+  popped.googlemap({});
 
   equal( 1, popped.getTrackEvent( popped.getLastTrackEventId() ).zoom, "zoom is defaulted to 1 from setup" );
   plus();
@@ -153,4 +148,43 @@ test( "Popcorn Google Map Plugin", function() {
   plus();
 
   popped.play();
+});
+
+asyncTest( "Overriding default toString", 3, function() {
+  var p = Popcorn( "#video" ),
+      locationText = "London, England",
+      latText = "43.665429",
+      lngText = "-79.403323",
+      lastEvent;
+
+  function testLastEvent( compareText, message ) {
+    lastEvent = p.getTrackEvent( p.getLastTrackEventId() );
+    equal( lastEvent.toString(), compareText, message );
+  }
+
+  p.googlemap({
+    location: locationText,
+    target: "height3",
+    height: "100px",
+    width: "120px"
+  });
+  testLastEvent( locationText, "Custom text displayed with toString using location" );
+
+  p.googlemap({
+    lat: latText,
+    lng: lngText,
+    target: "height3",
+    height: "100px",
+    width: "120px"
+  });
+  testLastEvent( latText + ", " + lngText, "Custom text displayed with toString using lat and lng" );
+
+  p.googlemap({
+    target: "height3",
+    height: "100px",
+    width: "120px"
+  });
+  testLastEvent( "Toronto, Ontario, Canada", "Custom text displayed with toString using default" );
+
+  start();
 });

@@ -36,13 +36,13 @@
       options: {
         start: {
           elem: "input",
-          type: "text",
-          label: "In"
+          type: "number",
+          label: "Start"
         },
         end: {
           elem: "input",
-          type: "text",
-          label: "Out"
+          type: "number",
+          label: "End"
         },
         text: {
           elem: "input",
@@ -61,9 +61,6 @@
       options._container.style.display = "none";
       options._container.innerHTML  = options.text;
 
-      if ( !target ) {
-        throw new Error( "target container doesn't exist" );
-      }
       target.appendChild( options._container );
     },
 

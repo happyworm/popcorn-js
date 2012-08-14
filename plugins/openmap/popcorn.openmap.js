@@ -70,10 +70,6 @@
     newdiv.style.height = "100%";
     i++;
 
-    if ( !target && Popcorn.plugin.debug ) {
-      throw new Error( "target container doesn't exist" );
-    }
-
     target && target.appendChild( newdiv );
 
     // callback function fires when the script is run
@@ -341,19 +337,19 @@
     options:{
       start: {
         elem: "input",
-        type: "text",
-        label: "In"
+        type: "number",
+        label: "Start"
       },
       end: {
         elem: "input",
-        type: "text",
-        label: "Out"
+        type: "number",
+        label: "End"
       },
       target: "map-container",
       type: {
         elem: "select",
         options: [ "ROADMAP", "SATELLITE", "TERRAIN" ],
-        label: "Type",
+        label: "Map Type",
         optional: true
       },
       zoom: {

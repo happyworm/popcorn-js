@@ -65,11 +65,6 @@
     containerDiv.style.display = "none";
     idx++;
 
-    // ensure the target container the user chose exists
-    if ( !target && Popcorn.plugin.debug ) {
-      throw new Error( "flickr target container doesn't exist" );
-    }
-
     target && target.appendChild( containerDiv );
 
     // get the userid from Flickr API by using the username and apikey
@@ -142,6 +137,11 @@
       _userid = options.userid;
       getFlickrData();
     }
+
+    options.toString = function() {
+      return options.tags || options.username || "Flickr";
+    };
+
     return {
       /**
        * @member flickr
@@ -176,18 +176,18 @@
     options: {
       start: {
         elem: "input",
-        type: "text",
-        label: "In"
+        type: "number",
+        label: "Start"
       },
       end: {
         elem: "input",
-        type: "text",
-        label: "Out"
+        type: "number",
+        label: "End"
       },
       userid: {
         elem: "input",
         type: "text",
-        label: "UserID",
+        label: "User ID",
         optional: true
       },
       tags: {
@@ -204,7 +204,7 @@
       apikey: {
         elem: "input",
         type: "text",
-        label: "Api_key",
+        label: "API Key",
         optional: true
       },
       target: "flickr-container",

@@ -1,4 +1,4 @@
-asyncTest( "Popcorn MediaSpawner Plugin", 7, function() {
+asyncTest( "Popcorn MediaSpawner Plugin", 6, function() {
 
   var popped = Popcorn( "#video" ),
       eventId,
@@ -103,31 +103,25 @@ asyncTest( "Test Initialized MediaSpawner Blocks throwing Errors", 4, function()
   } catch( e ) {
     ok( true, "No target container specified." );
   }
+});
 
-  try {
-    pop.mediaspawner({
-      source: {
-        poster: "../../test/poster.png",
-        controls: "controls",
-        type: "videe",
-        sources: {
-          mp4: {
-            id: "mp4",
-            src: "../../test/trailer.mp4",
-            type: "video/mp4;",
-            codecs: "avc1, mp4a"
-          }
-        }
-      },
-      target: "mediaspawnerdiv",
-      start: 1,
-      end: 5,
-      caption: "This is a test. We are assuming control. We are assuming control.<br/>",
-      autoplay: true
-    });
-  } catch( e ) {
-    ok( true, "Invalid HTML Media type specified caught" );
-    start();
+asyncTest( "Overriding default toString", 2, function() {
+  var p = Popcorn( "#video" ),
+      sourceText = "http://www.youtube.com/watch?v=B-N1yJyrQRY",
+      lastEvent;
+
+  function testLastEvent( compareText, message ) {
+    lastEvent = p.getTrackEvent( p.getLastTrackEventId() );
+    equal( lastEvent.toString(), compareText, message );
   }
 
+  p.mediaspawner({
+    source: sourceText 
+  });
+  testLastEvent( sourceText, "Custom text displayed with toString" );
+
+  p.mediaspawner({});
+  testLastEvent( "http://www.youtube.com/watch?v=CXDstfD9eJ0", "Custom text displayed with toString using default" );
+
+  start();
 });

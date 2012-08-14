@@ -102,25 +102,16 @@
 
     if ( !options.onStart || typeof options.onStart !== "function" ) {
 
-      if ( Popcorn.plugin.debug ) {
-        throw new Error( "Popcorn Code Plugin Error: onStart must be a function." );
-      }
       options.onStart = Popcorn.nop;
     }
 
     if ( options.onEnd && typeof options.onEnd !== "function" ) {
 
-      if ( Popcorn.plugin.debug ) {
-        throw new Error( "Popcorn Code Plugin Error: onEnd  must be a function." );
-      }
       options.onEnd = undefined;
     }
 
     if ( options.onFrame && typeof options.onFrame !== "function" ) {
 
-      if ( Popcorn.plugin.debug ) {
-        throw new Error( "Popcorn Code Plugin Error: onFrame  must be a function." );
-      }
       options.onFrame = undefined;
     }
 
@@ -155,13 +146,13 @@
     options: {
       start: {
        elem: "input",
-       type: "text",
-       label: "In"
+       type: "number",
+       label: "Start"
       },
       end: {
         elem: "input",
-        type: "text",
-        label: "Out"
+        type: "number",
+        label: "End"
       },
       onStart: {
         elem: "input",

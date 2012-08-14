@@ -43,18 +43,18 @@
         options:{
           start: {
             elem: "input",
-            type: "text",
-            label: "In"
+            type: "number",
+            label: "Start"
           },
           end: {
             elem: "input",
-            type: "text",
-            label: "Out"
+            type: "number",
+            label: "End"
           },
           src: {
             elem: "input",
             type: "text",
-            label: "Source",
+            label: "Tweet Source (# or @)",
             "default": "@popcornjs"
           },
           target: "twitter-container",
@@ -91,9 +91,6 @@
         // display none by default
         options.container.style.display = "none";
 
-        if ( !target && Popcorn.plugin.debug ) {
-          throw new Error( "target container doesn't exist" );
-        }
          // add the widget's div to the target div
         target && target.appendChild( options.container );
 
@@ -156,6 +153,10 @@
               isReady( that );
             }, 1);
           }
+        };
+
+        options.toString = function() {
+          return options.src || options._natives.manifest.options.src[ "default" ];
         };
 
         isReady( this );

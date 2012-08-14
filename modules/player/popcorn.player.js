@@ -20,8 +20,8 @@
       videoExtensions = "ogg|ogv|mp4|webm",
       mediaExtensions = audioExtensions + "|" + videoExtensions;
 
-  var audioExtensionRegexp = new RegExp( "^.*\\.(" + audioExtensions + ")$" ),
-      mediaExtensionRegexp = new RegExp( "^.*\\.(" + mediaExtensions + ")$" );
+  var audioExtensionRegexp = new RegExp( "^.*\\.(" + audioExtensions + ")($|\\?)" ),
+      mediaExtensionRegexp = new RegExp( "^.*\\.(" + mediaExtensions + ")($|\\?)" );
 
   Popcorn.player = function( name, player ) {
 
@@ -286,7 +286,10 @@
         }
       } else {
 
-        basePlayer.dispatchEvent( "error" );
+        // Asynchronous so that users can catch this event
+        setTimeout( function() {
+          basePlayer.dispatchEvent( "error" );
+        }, 0 );
       }
 
       popcorn = new Popcorn.p.init( basePlayer, options );
@@ -440,6 +443,9 @@
       firstSrc = typeof( src ) === "string" ? src : src.length ? src[ 0 ] : src;
 
       target = document.createElement( !!audioExtensionRegexp.exec( firstSrc ) ? elementTypes[ 0 ] : elementTypes[ 1 ] );
+
+      // Controls are defaulted to being present
+      target.controls = true;
 
       node.appendChild( target );
       node = target;

@@ -140,31 +140,31 @@ var googleCallback;
 
     i++;
 
-    // ensure the target container the user chose exists
-    if ( !target && Popcorn.plugin.debug ) {
-      throw new Error( "target container doesn't exist" );
-    }
     target && target.appendChild( newdiv );
 
     // ensure that google maps and its functions are loaded
     // before setting up the map parameters
     var isMapReady = function () {
       if ( _mapLoaded ) {
-        if ( options.location ) {
-          // calls an anonymous google function called on separate thread
-          geocoder.geocode({
-            "address": options.location
-          }, function ( results, status ) {
-            if ( status === google.maps.GeocoderStatus.OK ) {
-              options.lat = results[ 0 ].geometry.location.lat();
-              options.lng = results[ 0 ].geometry.location.lng();
-              location = new google.maps.LatLng( options.lat, options.lng );
-              map = buildMap( options, location, newdiv );
-            }
-          });
-        } else {
-          location = new google.maps.LatLng( options.lat, options.lng );
-          map = buildMap( options, location, newdiv );
+        if ( newdiv ) {
+          if ( options.location ) {
+            // calls an anonymous google function called on separate thread
+            geocoder.geocode({
+              "address": options.location
+            }, function ( results, status ) {
+              // second check for newdiv since it could have disappeared before
+              // this callback is actual run
+              if ( newdiv && status === google.maps.GeocoderStatus.OK ) {
+                options.lat = results[ 0 ].geometry.location.lat();
+                options.lng = results[ 0 ].geometry.location.lng();
+                location = new google.maps.LatLng( options.lat, options.lng );
+                map = buildMap( options, location, newdiv );
+              }
+            });
+          } else {
+            location = new google.maps.LatLng( options.lat, options.lng );
+            map = buildMap( options, location, newdiv );
+          }
         }
       } else {
           setTimeout(function () {
@@ -174,6 +174,10 @@ var googleCallback;
       };
 
     isMapReady();
+
+    options.toString = function() {
+      return options.location || ( ( options.lat && options.lng ) ? options.lat + ", " + options.lng : options._natives.manifest.options.location[ "default" ] );
+    };
 
     return {
       /**
@@ -189,6 +193,8 @@ var googleCallback;
         // ensure the map has been initialized in the setup function above
         var isMapSetup = function() {
           if ( map ) {
+            options._map = map;
+
             map.getDiv().style.display = "block";
             // reset the location and zoom just in case the user plaid with the map
             google.maps.event.trigger( map, "resize" );
@@ -342,11 +348,17 @@ var googleCallback;
                 }
               }
             }
+
+            if ( options.onmaploaded ) {
+              options.onmaploaded( options, map );
+            }
+
           } else {
             setTimeout(function () {
               isMapSetup();
             }, 13);
           }
+
         };
         isMapSetup();
       },
@@ -370,6 +382,8 @@ var googleCallback;
         // the map must be manually removed
         target && target.removeChild( newdiv );
         newdiv = map = location = null;
+
+        options._map = null;
       }
     };
   }, {
@@ -382,19 +396,19 @@ var googleCallback;
     options: {
       start: {
         elem: "input",
-        type: "text",
-        label: "In"
+        type: "start",
+        label: "Start"
       },
       end: {
         elem: "input",
-        type: "text",
-        label: "Out"
+        type: "start",
+        label: "End"
       },
       target: "map-container",
       type: {
         elem: "select",
         options: [ "ROADMAP", "SATELLITE", "STREETVIEW", "HYBRID", "TERRAIN", "STAMEN-WATERCOLOR", "STAMEN-TERRAIN", "STAMEN-TONER" ],
-        label: "Type",
+        label: "Map Type",
         optional: true
       },
       zoom: {

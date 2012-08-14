@@ -92,31 +92,32 @@
           start: {
             elem: "input",
             type: "number",
-            label: "In"
+            label: "Start"
           },
           end: {
             elem: "input",
             type: "number",
-            label: "Out"
+            label: "End"
+          },
+          src: {
+            elem: "input",
+            type: "url",
+            label: "Image URL",
+            "default": "http://mozillapopcorn.org/wp-content/themes/popcorn/images/for_developers.png"
           },
           href: {
             elem: "input",
             type: "url",
-            label: "anchor URL",
+            label: "Link",
             "default": "http://mozillapopcorn.org/wp-content/themes/popcorn/images/for_developers.png",
             optional: true
           },
           target: "image-container",
-          src: {
-            elem: "input",
-            type: "url",
-            label: "Source URL",
-            "default": "http://mozillapopcorn.org/wp-content/themes/popcorn/images/for_developers.png"
-          },
           text: {
             elem: "input",
             type: "text",
-            label: "Text",
+            label: "Caption",
+            "default": "Popcorn.js",
             optional: true
           }
         }
@@ -130,10 +131,6 @@
         options.anchor.style.textDecoration = "none";
         options.anchor.style.display = "none";
 
-        if ( !target && Popcorn.plugin.debug ) {
-          throw new Error( "target container doesn't exist" );
-        }
-
         // add the widget's div to the target div.
         // if target is <video> or <audio>, create a container and routinely 
         // update its size/position to be that of the media
@@ -143,7 +140,7 @@
             options.trackedContainer.element.appendChild( options.anchor );
           }
           else {
-            target.appendChild( options.anchor );
+            target && target.appendChild( options.anchor );
           }          
         }
 
@@ -185,6 +182,12 @@
         }, false );
 
         img.src = options.src;
+
+        options.toString = function() {
+          var string = options.src || options._natives.manifest.options.src[ "default" ],
+              match = string.replace( /.*\//g, "" );
+          return match.length ? match : string;
+        };
       },
 
       /**
