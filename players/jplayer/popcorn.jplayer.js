@@ -107,20 +107,16 @@
 
 	Popcorn.player( 'jplayer', {
 		_canPlayType: function( containerType, url ) {
-			// We should check that the url is absolute too. ie., starts with http:// or https://
 			var cType = containerType.toLowerCase(),
 			rVal = false; // Only a boolean false means it is not supported.
 
 			if(cType !== 'video' && cType !== 'audio') {
-				// Only check the Essential jPlayer Media Formats.
-				// Also check it starts with http, so the URL is absolute... Well, it ain't a perfect check.
+				// Check it starts with http, so the URL is absolute... Well, it ain't a perfect check.
 				if(/^http.*/i.test(url)) {
 					var mediaType = getMediaType(url);
 					if(mediaType) {
-						// check mime
-
 						var mediaElem;
-
+						// Create an HTML5 media element for the type of media.
 						if(format[mediaType]) { // Redundant clause, assuming getMediaType and format object line up.
 							if(format[mediaType].media === 'audio') {
 								mediaElem = document.createElement('audio');
@@ -129,6 +125,8 @@
 							}
 						}
 
+						// See if the HTML5 media element can play the MIME / Codec type.
+						// Flash also returns the object if the format is playable, so it is truethy, but that html property is false.
 						// This assumes Flash is available, but that should be dealt with by jPlayer if that happens.
 						if(mediaElem || format[mediaType].flashCanPlay) {
 							rVal = {
