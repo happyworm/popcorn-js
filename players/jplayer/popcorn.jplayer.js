@@ -23,30 +23,130 @@
 (function(Popcorn) {
 
 	var jQueryDownloading = false,
-	jPlayerDownloading = false;
+	jPlayerDownloading = false,
+	format = { // Duplicate of jPlayer 2.2.0 object, to avoid always requiring jQuery and jPlayer to be loaded before performing the _canPlayType() test.
+		mp3: {
+			codec: 'audio/mpeg; codecs="mp3"',
+			flashCanPlay: true,
+			media: 'audio'
+		},
+		m4a: { // AAC / MP4
+			codec: 'audio/mp4; codecs="mp4a.40.2"',
+			flashCanPlay: true,
+			media: 'audio'
+		},
+		oga: { // OGG
+			codec: 'audio/ogg; codecs="vorbis"',
+			flashCanPlay: false,
+			media: 'audio'
+		},
+		wav: { // PCM
+			codec: 'audio/wav; codecs="1"',
+			flashCanPlay: false,
+			media: 'audio'
+		},
+		webma: { // WEBM
+			codec: 'audio/webm; codecs="vorbis"',
+			flashCanPlay: false,
+			media: 'audio'
+		},
+		fla: { // FLV / F4A
+			codec: 'audio/x-flv',
+			flashCanPlay: true,
+			media: 'audio'
+		},
+		rtmpa: { // RTMP AUDIO
+			codec: 'audio/rtmp; codecs="rtmp"',
+			flashCanPlay: true,
+			media: 'audio'
+		},
+		m4v: { // H.264 / MP4
+			codec: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"',
+			flashCanPlay: true,
+			media: 'video'
+		},
+		ogv: { // OGG
+			codec: 'video/ogg; codecs="theora, vorbis"',
+			flashCanPlay: false,
+			media: 'video'
+		},
+		webmv: { // WEBM
+			codec: 'video/webm; codecs="vorbis, vp8"',
+			flashCanPlay: false,
+			media: 'video'
+		},
+		flv: { // FLV / F4V
+			codec: 'video/x-flv',
+			flashCanPlay: true,
+			media: 'video'
+		},
+		rtmpv: { // RTMP VIDEO
+			codec: 'video/rtmp; codecs="rtmp"',
+			flashCanPlay: true,
+			media: 'video'
+		}
+	},
+	getMediaType = function(url) {
+		var mediaType = false;
+		if(/\.mp3$/i.test(url)) {
+			mediaType = 'mp3';
+		} else if(/\.mp4$/i.test(url) || /\.m4v$/i.test(url)) {
+			mediaType = 'm4v';
+		} else if(/\.m4a$/i.test(url)) {
+			mediaType = 'm4a';
+		} else if(/\.ogg$/i.test(url) || /\.oga$/i.test(url)) {
+			mediaType = 'oga';
+		} else if(/\.ogv$/i.test(url)) {
+			mediaType = 'ogv';
+		} else if(/\.webm$/i.test(url)) {
+			mediaType = 'webmv';
+		}
+		// The list here should be expanded to contain all possible jPlayer formats, even RTMP as it might be useful.
+		return mediaType;
+	};
 
 	Popcorn.player( 'jplayer', {
 		_canPlayType: function( containerType, url ) {
 			// We should check that the url is absolute too. ie., starts with http:// or https://
-			var cType = containerType.toLowerCase();
+			var cType = containerType.toLowerCase(),
+			rVal = false; // Only a boolean false means it is not supported.
+
 			if(cType !== 'video' && cType !== 'audio') {
 				// Only check the Essential jPlayer Media Formats.
 				// Also check it starts with http, so the URL is absolute... Well, it ain't a perfect check.
-				if(/(^http.*\.(mp3|mp4|m4a|m4v)$)/i.test(url)) {
-					return true;
-				} else {
-					return false;
+				if(/^http.*/i.test(url)) {
+					var mediaType = getMediaType(url);
+					if(mediaType) {
+						// check mime
+
+						var mediaElem;
+
+						if(format[mediaType]) { // Redundant clause, assuming getMediaType and format object line up.
+							if(format[mediaType].media === 'audio') {
+								mediaElem = document.createElement('audio');
+							} else if(format[mediaType].media === 'video') {
+								mediaElem = document.createElement('video');
+							}
+						}
+
+						// This assumes Flash is available, but that should be dealt with by jPlayer if that happens.
+						if(mediaElem || format[mediaType].flashCanPlay) {
+							rVal = {
+								html: !!mediaElem.canPlayType && mediaElem.canPlayType(format[mediaType].codec),
+								type: mediaType
+							};
+						}
+					}
 				}
-			} else {
-				return false;
 			}
+			return rVal;
 		},
 		_setup: function( options ) {
 
 			var media = this,
 			myPlayer, // The jQuery selector of the jPlayer element. Usually a <div>
 			jPlayerObj, // The jPlayer data instance. For performance and DRY code.
-			formatType = 'unknown',
+			mediaType = 'unknown',
 			jpMedia = {},
 			ready = false, // Used during init to override the annoying duration dependance in the track event padding during Popcorn's isReady(). ie., We is ready after loadeddata and duration can then be set real value at leisure.
 			duration = 0, // For the durationchange event with both HTML5 and Flash solutions. Used with 'ready' to keep control during the Popcorn isReady() via loadeddata event. (Duration=0 is bad.)
@@ -149,18 +249,16 @@
 
 					myPlayer = $('#' +  media.id);
 
-					if(/\.mp3$/i.test(media.src)) {
-						formatType = 'mp3';
-					} else if(/\.mp4$/i.test(media.src) || /\.m4v$/i.test(media.src)) {
-						formatType = 'm4v';
-					} else if(/\.m4a$/i.test(media.src)) {
-						formatType = 'm4a';
-					} else {
+					mediaType = getMediaType(media.src);
+/*
+					// Not sure this part is even possible, since _canPlayType is oblivious to the options, which MIGHT contain a supplied option.
+					// Leaving this in for now, commented out. Believe Popcorn plan to add an optional MIME param to _canPlayType.
+					if(!mediaType) {
 						// We have a problem... Due to only having a URL to work with here.
 						// See if a jPlayer supplied option was given to define the SINGLE format.
 						var supplied = (options.supplied && options.supplied.split(',')) || [];
 						if(/\.(m4v|m4a|mp3)$/i.test(supplied[0])) {
-							formatType = supplied[0];
+							mediaType = supplied[0];
 						} else {
 							// Give up.
 							error = {
@@ -171,11 +269,11 @@
 							return;
 						}
 					}
-
-					jpMedia[formatType] = media.src;
+*/
+					jpMedia[mediaType] = media.src;
 					jpMedia.poster = options.poster;
 
-					options.supplied = formatType; // Force the supplied option, just in case it was set in the options.
+					options.supplied = mediaType; // Force the supplied option, just in case it was set in the options.
 
 					// options.solution = 'flash,html'; // TMP FOR TESTING!!!
 
