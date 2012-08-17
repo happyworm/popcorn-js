@@ -48,7 +48,7 @@
     }
 
     var self = this,
-      parent = typeof id === "string" ? document.querySelector( id ) : id,
+      parent = typeof id === "string" ? Popcorn.dom.find( id ) : id,
       elem,
       impl = {
         src: EMPTY_STRING,
@@ -57,7 +57,7 @@
         seeking: false,
         autoplay: EMPTY_STRING,
         preload: EMPTY_STRING,
-        controls: true,
+        controls: false,
         loop: false,
         poster: EMPTY_STRING,
         volume: 1,
@@ -365,7 +365,7 @@
     }
 
     function changeSrc( aSrc ) {
-      if( !self.canPlayType( aSrc ) ) {
+      if( !self._canPlaySrc( aSrc ) ) {
         impl.error = {
           name: "MediaError",
           message: "Media Source Not Supported",
@@ -600,15 +600,22 @@
     });
   }
 
-  HTMLSoundCloudAudioElement.prototype = Popcorn._MediaElementProto;
+  HTMLSoundCloudAudioElement.prototype = new Popcorn._MediaElementProto();
 
-  HTMLSoundCloudAudioElement.prototype.canPlayType = function( url ) {
+  // Helper for identifying URLs we know how to play.
+  HTMLSoundCloudAudioElement.prototype._canPlaySrc = function( url ) {
     return (/(?:http:\/\/www\.|http:\/\/|www\.|\.|^)(soundcloud)/).test( url ) ?
       "probably" : EMPTY_STRING;
+  };
+
+  // We'll attempt to support a mime type of audio/x-soundcloud
+  HTMLSoundCloudAudioElement.prototype.canPlayType = function( type ) {
+    return type === "audio/x-soundcloud" ? "probably" : EMPTY_STRING;
   };
 
   Popcorn.HTMLSoundCloudAudioElement = function( id ) {
     return new HTMLSoundCloudAudioElement( id );
   };
+  Popcorn.HTMLSoundCloudAudioElement._canPlaySrc = HTMLSoundCloudAudioElement.prototype._canPlaySrc;
 
 }( Popcorn, window, document ));
