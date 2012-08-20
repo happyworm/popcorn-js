@@ -64,9 +64,9 @@
 */
 
 				// A test during dev...
-				console.dir(Popcorn.jplayer.canPlayType('div', media[0].m4v)); // Works with Object or String.
+				console.dir(Popcorn.jplayer.canPlayType('div', media[0])); // Works with Object or String.
 
-				popcorn = Popcorn.jplayer('#video', media[0].m4v, options); // remove .m4v after dev testing... ie., when i write the code for instancing an srcObj.
+				popcorn = Popcorn.jplayer('#video', media[0].webmv, options); // remove .m4v after dev testing... ie., when i write the code for instancing an srcObj.
 
 				popcorn = popcorn
 					.footnote({

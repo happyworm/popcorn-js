@@ -217,6 +217,8 @@
 		},
 		_setup: function( options ) {
 
+			// Warning: options is deprecated.
+
 			var media = this,
 			myPlayer, // The jQuery selector of the jPlayer element. Usually a <div>
 			jPlayerObj, // The jPlayer data instance. For performance and DRY code.
@@ -323,7 +325,17 @@
 
 					myPlayer = $('#' +  media.id);
 
-					mediaType = getMediaType(media.src);
+					if(typeof media.src === 'string') {
+						mediaType = getMediaType(media.src);
+						jpMedia[mediaType] = media.src;
+						// jpMedia.poster = options.poster;
+						options.supplied = mediaType; // Force the supplied option, just in case it was set in the options.
+						// options.solution = 'flash,html'; // TMP FOR TESTING!!!
+					} else {
+						jpMedia = media.src;
+						options.solution = media.src.solution ? media.src.solution : 'html,flash';
+						options.supplied = media.src.supplied ? media.src.supplied : 'mp3'; // Want to grab object props if not given.
+					}
 /*
 					// Not sure this part is even possible, since _canPlayType is oblivious to the options, which MIGHT contain a supplied option.
 					// Leaving this in for now, commented out. Believe Popcorn plan to add an optional MIME param to _canPlayType.
@@ -344,12 +356,6 @@
 						}
 					}
 */
-					jpMedia[mediaType] = media.src;
-					jpMedia.poster = options.poster;
-
-					options.supplied = mediaType; // Force the supplied option, just in case it was set in the options.
-
-					// options.solution = 'flash,html'; // TMP FOR TESTING!!!
 
 					// Allow the swfPath to be set to local server. ie., If the jPlayer Plugin is local and already on the page, then you can also use the local SWF.
 					options.swfPath = options.swfPath || 'http://www.jplayer.org/2.1.0/js/Jplayer.swf';
