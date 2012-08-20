@@ -101,7 +101,6 @@
 		} else if(/\.webm$/i.test(url)) {
 			mediaType = 'webmv';
 		}
-		// The list here should be expanded to contain all possible jPlayer formats, even RTMP as it might be useful.
 		return mediaType;
 	},
 	getSupplied = function(url) {
@@ -123,7 +122,8 @@
 
 	Popcorn.player( 'jplayer', {
 		_canPlayType: function( containerType, url ) {
-			// url : Either a String or an Object structured as a jPlayer media object. ie., As used by setMedia in jPlayer.
+			// url : Either a String or an Object structured similar a jPlayer media object. ie., As used by setMedia in jPlayer.
+			// The url object may also contain a solution and supplied property.
 
 			var cType = containerType.toLowerCase(),
 			srcObj = {},
@@ -140,28 +140,6 @@
 							srcObj.solution = 'html,flash';
 							srcObj.supplied = mediaType;
 						}
-/*
-						if(mediaType) {
-							var mediaElem;
-							// Create an HTML5 media element for the type of media.
-							if(format[mediaType]) { // Redundant clause, assuming getMediaType and format object line up.
-								if(format[mediaType].media === 'audio') {
-									mediaElem = document.createElement('audio');
-								} else if(format[mediaType].media === 'video') {
-									mediaElem = document.createElement('video');
-								}
-							}
-							// See if the HTML5 media element can play the MIME / Codec type.
-							// Flash also returns the object if the format is playable, so it is truethy, but that html property is false.
-							// This assumes Flash is available, but that should be dealt with by jPlayer if that happens.
-							if(mediaElem || format[mediaType].flashCanPlay) {
-								rVal = {
-									html: !!mediaElem.canPlayType && mediaElem.canPlayType(format[mediaType].codec),
-									type: mediaType
-								};
-							}
-						}
-*/
 					}
 				} else {
 					srcObj = url; // Assume the url is an object.
@@ -177,8 +155,6 @@
 					if(!srcObj.supplied) {
 						srcObj.supplied = getSupplied(url);
 					}
-
-					// Generic code... To loop through the supplied option string.
 
 					// Figure out how jPlayer will play it.
 					// This may not work properly when both audio and video is supplied. ie., A media player. But it should return truethy and jPlayer can figure it out.
@@ -199,13 +175,6 @@
 
 								// Create an HTML5 media element for the type of media.
 								if(!mediaElem && checkingHtml) {
-/*
-									if(format[mediaType].media === 'audio') {
-										mediaElem = document.createElement('audio');
-									} else if(format[mediaType].media === 'video') {
-										mediaElem = document.createElement('video');
-									}
-*/
 									mediaElem = document.createElement(format[mediaType].media);
 								}
 								// See if the HTML5 media element can play the MIME / Codec type.
@@ -351,28 +320,9 @@
 						options.solution = media.src.solution ? media.src.solution : 'html,flash';
 						options.supplied = media.src.supplied ? media.src.supplied : getSupplied(media.src);
 					}
-/*
-					// Not sure this part is even possible, since _canPlayType is oblivious to the options, which MIGHT contain a supplied option.
-					// Leaving this in for now, commented out. Believe Popcorn plan to add an optional MIME param to _canPlayType.
-					if(!mediaType) {
-						// We have a problem... Due to only having a URL to work with here.
-						// See if a jPlayer supplied option was given to define the SINGLE format.
-						var supplied = (options.supplied && options.supplied.split(',')) || [];
-						if(/\.(m4v|m4a|mp3)$/i.test(supplied[0])) {
-							mediaType = supplied[0];
-						} else {
-							// Give up.
-							error = {
-								code: 3 // MEDIA_ERR_DECODE Not quite correct, since the resource was never established to be usable. But close enough.
-							};
-							console.log('Dispatched event: error');
-							media.dispatchEvent('error');
-							return;
-						}
-					}
-*/
 
 					// Allow the swfPath to be set to local server. ie., If the jPlayer Plugin is local and already on the page, then you can also use the local SWF.
+					// NB: This will need to come through on the first SRC object used during instancing.
 					options.swfPath = options.swfPath || 'http://www.jplayer.org/2.1.0/js/Jplayer.swf';
 
 					myPlayer.bind($.jPlayer.event.ready, function(event) {
