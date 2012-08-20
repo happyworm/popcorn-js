@@ -38,11 +38,12 @@
 				},
 				popcorn;
 
-				// Using the canPlayMethod to determine whether HTML5 can play the media, otherwise Flash would be used.
-				if(Popcorn.jplayer.canPlayType(source.m4v).html) {
+				// Using the canPlayType method to determine whether HTML5 can play the media, otherwise Flash would be used.
+				// Only the last clause is required, the other clauses are there to get the browser to use an html solution.
+				if(Popcorn.jplayer.canPlayType('div', source.m4v).html) {
 					// HTML5 can play M4V in this browser.
 					popcorn = Popcorn.jplayer('#video', source.m4v, options);
-				} else if(Popcorn.jplayer.canPlayType(source.webm).html) {
+				} else if(Popcorn.jplayer.canPlayType('div', source.webm).html) {
 					// HTML5 can play WEBM in this browser.
 					popcorn = Popcorn.jplayer('#video', source.webm, options);
 				} else {
