@@ -107,32 +107,108 @@
 
 	Popcorn.player( 'jplayer', {
 		_canPlayType: function( containerType, url ) {
+			// url : Either a String or an Object structured as a jPlayer media object. ie., As used by setMedia in jPlayer.
+
 			var cType = containerType.toLowerCase(),
+			srcObj = {},
 			rVal = false; // Only a boolean false means it is not supported.
 
 			if(cType !== 'video' && cType !== 'audio') {
-				// Check it starts with http, so the URL is absolute... Well, it ain't a perfect check.
-				if(/^http.*/i.test(url)) {
-					var mediaType = getMediaType(url);
-					if(mediaType) {
-						var mediaElem;
-						// Create an HTML5 media element for the type of media.
-						if(format[mediaType]) { // Redundant clause, assuming getMediaType and format object line up.
-							if(format[mediaType].media === 'audio') {
-								mediaElem = document.createElement('audio');
-							} else if(format[mediaType].media === 'video') {
-								mediaElem = document.createElement('video');
+
+				if(typeof url === 'string') {
+					// Check it starts with http, so the URL is absolute... Well, it ain't a perfect check.
+					if(/^http.*/i.test(url)) {
+						var mediaType = getMediaType(url);
+						if(mediaType) {
+							srcObj[mediaType] = url;
+							srcObj.solution = 'html,flash';
+							srcObj.supplied = mediaType;
+						}
+/*
+						if(mediaType) {
+							var mediaElem;
+							// Create an HTML5 media element for the type of media.
+							if(format[mediaType]) { // Redundant clause, assuming getMediaType and format object line up.
+								if(format[mediaType].media === 'audio') {
+									mediaElem = document.createElement('audio');
+								} else if(format[mediaType].media === 'video') {
+									mediaElem = document.createElement('video');
+								}
+							}
+							// See if the HTML5 media element can play the MIME / Codec type.
+							// Flash also returns the object if the format is playable, so it is truethy, but that html property is false.
+							// This assumes Flash is available, but that should be dealt with by jPlayer if that happens.
+							if(mediaElem || format[mediaType].flashCanPlay) {
+								rVal = {
+									html: !!mediaElem.canPlayType && mediaElem.canPlayType(format[mediaType].codec),
+									type: mediaType
+								};
 							}
 						}
+*/
+					}
+				} else {
+					srcObj = url; // Assumes url is an object.
+				}
 
-						// See if the HTML5 media element can play the MIME / Codec type.
-						// Flash also returns the object if the format is playable, so it is truethy, but that html property is false.
-						// This assumes Flash is available, but that should be dealt with by jPlayer if that happens.
-						if(mediaElem || format[mediaType].flashCanPlay) {
-							rVal = {
-								html: !!mediaElem.canPlayType && mediaElem.canPlayType(format[mediaType].codec),
-								type: mediaType
-							};
+				// Check the srcObj is indeed an Object before we start poking it.
+				if(srcObj.hasOwnProperty) {
+
+					if(!srcObj.solution) {
+						srcObj.solution = 'html,flash';
+					}
+
+					if(!srcObj.supplied) {
+						// Just create a supplied string from the SRC object properties and only the formats will get checked... Even if the order is unpredictable.
+					}
+
+					// Generic code... To loop through the supplied option string.
+
+					// Figure out how jPlayer will play it.
+					// This may not work properly when both audio and video is supplied. ie., A media player. But it should return truethy and jPlayer can figure it out.
+					// This part seems overly complicated to the author... Maybe over-engineering this method.
+					
+					var solution = srcObj.solution.toLowerCase().split(","), // Create the solution array, with prority based on the order of the solution string.
+					supplied = srcObj.supplied.toLowerCase().split(","); // Create the supplied formats array, with prority based on the order of the supplied formats string.
+
+					for(var sol = 0; sol < solution.length; sol++) {
+
+						var solutionType = solution[sol].replace(/^\s+|\s+$/g, ""), //trim
+						checkingHtml = solutionType === 'html',
+						checkingFlash = solutionType === 'flash',
+						mediaElem;
+
+						for(var fmt = 0; fmt < supplied.length; fmt++) {
+							var mediaType = supplied[fmt].replace(/^\s+|\s+$/g, ""); //trim
+							if(format[mediaType]) { // Check format is valid.
+
+								// Create an HTML5 media element for the type of media.
+								if(!mediaElem && checkingHtml) {
+/*
+									if(format[mediaType].media === 'audio') {
+										mediaElem = document.createElement('audio');
+									} else if(format[mediaType].media === 'video') {
+										mediaElem = document.createElement('video');
+									}
+*/
+									mediaElem = document.createElement(format[mediaType].media);
+								}
+								// See if the HTML5 media element can play the MIME / Codec type.
+								// Flash also returns the object if the format is playable, so it is truethy, but that html property is false.
+								// This assumes Flash is available, but that should be dealt with by jPlayer if that happens.
+								var htmlCanPlay = !!(mediaElem && mediaElem.canPlayType && mediaElem.canPlayType(format[mediaType].codec)),
+								htmlWillPlay = htmlCanPlay && checkingHtml,
+								flashWillPlay = format[mediaType].flashCanPlay && checkingFlash;
+								// The first one found will match what jPlayer uses.
+								if(htmlWillPlay || flashWillPlay) {
+									rVal = {
+										html: htmlWillPlay,
+										type: mediaType
+									};
+									sol = solution.length; // Exit solution loop
+									fmt = supplied.length; // Exit supplied loop
+								}
+							}
 						}
 					}
 				}
