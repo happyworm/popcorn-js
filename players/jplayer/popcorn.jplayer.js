@@ -9,9 +9,9 @@
  *
  * Author: Mark J Panaghiston
  * Version: 0.1.0
- * Date: 19th June 2012
+ * Date: 20th August 2012
  *
- * For jPlayer Version: 2.1.0
+ * For jPlayer Version: 2.1.0 (It will be for 2.2.0 once that is online)
  * Requires: jQuery 1.3.2+
  * Note: jQuery dependancy cannot be removed since jPlayer 2 is a jQuery plugin. Use of jQuery will be kept to a minimum.
  */
@@ -127,14 +127,15 @@
 
 			var cType = containerType.toLowerCase(),
 			srcObj = {},
-			rVal = false; // Only a boolean false means it is not supported.
+			rVal = false, // Only a boolean false means it is not supported.
+			mediaType;
 
 			if(cType !== 'video' && cType !== 'audio') {
 
 				if(typeof url === 'string') {
 					// Check it starts with http, so the URL is absolute... Well, it ain't a perfect check.
 					if(/^http.*/i.test(url)) {
-						var mediaType = getMediaType(url);
+						mediaType = getMediaType(url);
 						if(mediaType) {
 							srcObj[mediaType] = url;
 							srcObj.solution = 'html,flash';
@@ -170,7 +171,7 @@
 						mediaElem;
 
 						for(var fmt = 0; fmt < supplied.length; fmt++) {
-							var mediaType = supplied[fmt].replace(/^\s+|\s+$/g, ""); //trim
+							mediaType = supplied[fmt].replace(/^\s+|\s+$/g, ""); //trim
 							if(format[mediaType]) { // Check format is valid.
 
 								// Create an HTML5 media element for the type of media.
@@ -279,7 +280,7 @@
 					}
 				};
 
-				myPlayer.bind($.jPlayer.event.loadstart, function(event) {
+				myPlayer.bind($.jPlayer.event.loadstart, function() {
 					setTimeout(function() {
 						console.log('Trigger : loadeddata');
 						jPlayerObj._trigger($.jPlayer.event.loadeddata);
@@ -293,7 +294,7 @@
 					checkDuration(event);
 					checkCanPlayThrough(event);
 				})
-				.bind($.jPlayer.event.play, function(event) {
+				.bind($.jPlayer.event.play, function() {
 					setTimeout(function() {
 						console.log('Trigger : playing');
 						jPlayerObj._trigger($.jPlayer.event.playing);
@@ -402,7 +403,7 @@
 					console.log('Created CUSTOM event handler for: error');
 
 					Popcorn.player.defineProperty( media, 'error', {
-						set: function( val ) {
+						set: function() {
 							// Read-only property
 							if(!options.destroyed) {
 								return error;
@@ -452,7 +453,7 @@
 					 */
 
 					Popcorn.player.defineProperty( media, 'duration', {
-						set: function( val ) {
+						set: function() {
 							// Read-only property
 							if(!options.destroyed && ready) {
 								return duration;
@@ -498,7 +499,7 @@
 					});
 
 					Popcorn.player.defineProperty( media, 'paused', {
-						set: function( val ) {
+						set: function() {
 							// Read-only property
 							if(!options.destroyed) {
 								return jPlayerObj.status.paused;
