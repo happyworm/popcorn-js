@@ -103,6 +103,22 @@
 		}
 		// The list here should be expanded to contain all possible jPlayer formats, even RTMP as it might be useful.
 		return mediaType;
+	},
+	getSupplied = function(url) {
+		var supplied = '',
+		separator = '';
+		// Basic check for Object
+		if(url && url.hasOwnProperty) {
+			// Generate supplied option from object's properties. Non-format properties would be ignored by jPlayer. Order is unpredictable.
+			for(var prop in url) {
+				if(url.hasOwnProperty(prop)) {
+					supplied += separator + prop;
+					separator = ',';
+				}
+			}
+		}
+		console.log('getSupplied(): Generated: supplied = "' + supplied + '"');
+		return supplied;
 	};
 
 	Popcorn.player( 'jplayer', {
@@ -148,7 +164,7 @@
 */
 					}
 				} else {
-					srcObj = url; // Assumes url is an object.
+					srcObj = url; // Assume the url is an object.
 				}
 
 				// Check the srcObj is indeed an Object before we start poking it.
@@ -159,14 +175,13 @@
 					}
 
 					if(!srcObj.supplied) {
-						// Just create a supplied string from the SRC object properties and only the formats will get checked... Even if the order is unpredictable.
+						srcObj.supplied = getSupplied(url);
 					}
 
 					// Generic code... To loop through the supplied option string.
 
 					// Figure out how jPlayer will play it.
 					// This may not work properly when both audio and video is supplied. ie., A media player. But it should return truethy and jPlayer can figure it out.
-					// This part seems overly complicated to the author... Maybe over-engineering this method.
 					
 					var solution = srcObj.solution.toLowerCase().split(","), // Create the solution array, with prority based on the order of the solution string.
 					supplied = srcObj.supplied.toLowerCase().split(","); // Create the supplied formats array, with prority based on the order of the supplied formats string.
@@ -334,7 +349,7 @@
 					} else {
 						jpMedia = media.src;
 						options.solution = media.src.solution ? media.src.solution : 'html,flash';
-						options.supplied = media.src.supplied ? media.src.supplied : 'mp3'; // Want to grab object props if not given.
+						options.supplied = media.src.supplied ? media.src.supplied : getSupplied(media.src);
 					}
 /*
 					// Not sure this part is even possible, since _canPlayType is oblivious to the options, which MIGHT contain a supplied option.

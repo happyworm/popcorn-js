@@ -27,8 +27,8 @@
 					m4v: 'http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v',
 					webmv: 'http://www.jplayer.org/video/webm/Big_Buck_Bunny_Trailer.webm',
 					poster: "http://www.jplayer.org/video/poster/Big_Buck_Bunny_Trailer_480x270.png",
-					solution:"html,flash",
-					supplied: "webmv,m4v"
+					// solution:"html,flash",
+					// supplied: "m4v,webmv"
 				}, {
 					m4v: 'http://www.jplayer.org/video/m4v/Incredibles_Teaser.m4v',
 					webmv: 'http://www.jplayer.org/video/webm/Incredibles_Teaser.webm',
@@ -66,7 +66,7 @@
 				// A test during dev...
 				console.dir(Popcorn.jplayer.canPlayType('div', media[0])); // Works with Object or String.
 
-				popcorn = Popcorn.jplayer('#video', media[0].webmv, options); // remove .m4v after dev testing... ie., when i write the code for instancing an srcObj.
+				popcorn = Popcorn.jplayer('#video', media[0], options); // remove .m4v after dev testing... ie., when i write the code for instancing an srcObj.
 
 				popcorn = popcorn
 					.footnote({
