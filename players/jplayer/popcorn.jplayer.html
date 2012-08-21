@@ -8,7 +8,6 @@
 		<script type="text/javascript" src="popcorn.jplayer.js"></script>
 		<script src="../../plugins/footnote/popcorn.footnote.js"></script>
 		<script src="../../plugins/flickr/popcorn.flickr.js"></script>
-		<!-- <script src="../../plugins/attribution/popcorn.attribution.js"></script> -->
 		<script src="../../plugins/webpage/popcorn.webpage.js"></script>
 		<script src="../../plugins/googlefeed/popcorn.googlefeed.js"></script>
 		<script src="../../plugins/image/popcorn.image.js"></script>
@@ -23,7 +22,7 @@
 			
 			document.addEventListener( 'DOMContentLoaded', function() {
 				var paused = true,
-				media = { // Supplied option only read during instancing and cannot be changed. ie., All media SRC objects must contain URLs for each supplied format.
+				media = {
 					m4v: 'http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v',
 					webmv: 'http://www.jplayer.org/video/webm/Big_Buck_Bunny_Trailer.webm',
 					poster: "http://www.jplayer.org/video/poster/Big_Buck_Bunny_Trailer_480x270.png",
@@ -50,33 +49,23 @@
 					.footnote({
 						start: 5, // seconds
 						end: 40, // seconds
-						text: 'The video is "RiP: A Remix Manifesto", by Brett Gaylor',
+						text: 'The video is "Big Buck Bunny", &copy; 2008 Blender Foundation',
 						target: 'footnotediv'
 					})
 					.flickr({
 						start: 20, // seconds
 						end: 40, // seconds
-						tags: 'georgia',
+						tags: 'edinburgh',
 						numberofimages: '8',
 						target: 'flickrdiv'
 					})
 					.twitter({
 						start: 20, // seconds
 						end: 45, // seconds
-						title: 'Oil Spill',
-						src: '#oilspill',
+						title: 'jPlayer',
+						src: '@jPlayerOrg',
 						target: 'twitterdiv'
 					})
-/*					.attribution({
-						start: 5, // seconds
-						end: 60, // seconds
-						nameofwork: "Internet",
-						nameofworkurl:"http://www.archive.org/details/CC1232_internet",
-						copyrightholder:"The Computer Chronicles",
-						license:"CC-BY-NC-ND",
-						licenseurl: "http://creativecommons.org/licenses/by-nc-nd/2.0/",
-						target: 'attribdiv'
-					}) */
 					.subtitle({
 						start: 5, // seconds
 						end: 15, // seconds
@@ -95,8 +84,8 @@
 						start: 0, // seconds
 						end: 15, // seconds
 						target: "feeddiv",
-						url: "http://zenit.senecac.on.ca/~chris.tyler/planet/rss20.xml",
-						title: "Planet Feed",
+						url: "http://happyworm.com/blog/feed/rss/",
+						title: "The Worm Hole",
 						orientation: "Vertical"
 					})
 					.image({
@@ -187,28 +176,25 @@
 					jPlayer autommatically selects an HTML5 solution, if available, or uses a Flash solution on browsers that do not natively support MP3, M4A or M4V. (MP4: H.264 / AAC)<br />
 					Due to the Flash security model, this demo must be run from a web server. Otherwise Firefox, Opera and IE8 will fail.
 				<hr >
-					The jPlayer player is chromeless (hidden controls), but the controls may be added using the standard jPlayer mechanism described at <a href="http:jplayer.org">jplayer.org</a>.<br />
+					The jPlayer player is chromeless (hidden controls), but the controls may be added using the standard jPlayer mechanism described at <a href="http://jplayer.org">jplayer.org</a>.<br />
 					Basically, the skin would be done in the normal manner, but the Popcorn jPlayer player instances jPlayer on your jPlayer DIV instead of the usual commands to instance jPlayer.<br />
 					Clicking play/pause or seeking in either the video or via custom controls will cause the other to update.<br />
-					The video can be specified in the HTML source by giving the media url (http://www.domain.com/media/video.m4v) to either Popcorn.jplayer <b>or as the div src attribute</b>.<br/>
+					The video/audio can be specified in the HTML source by giving the media url (http://www.domain.com/media/video.m4v) to either Popcorn.jplayer <b>or as the div src attribute</b>.<br/>
+					Alternatively, the video/audio can be specified in the HTML source by giving the media url object to Popcorn.jplayer.
 				</p>
 				<h4>Expected Events</h4>
 				<ul>
-					<li>From 5 to 40 seconds, the footnote 'The video is "RiP: A Remix Manifesto", by Brett Gaylor' will appear below 'Footnote Area'.</li>
-					<li>From 20 to 40 seconds, the a flickr stream of 8 images  tagged 'georgia' will appear below 'Flickr Area'.</li>
-					<li>From 20 to 45 seconds, tweets tagged #oilspill will appear below 'Twitter Area'.</li>
-					<li>From 5 to 60 seconds, the Creative Commons license will appear below 'Attributions Area'.</li>
+					<li>From 5 to 40 seconds, the footnote 'The video is "Big Buck Bunny", &copy; 2008 Blender Foundation' will appear below 'Footnote Area'.</li>
+					<li>From 20 to 40 seconds, the a flickr stream of 8 images  tagged 'edinburgh' will appear below 'Flickr Area'.</li>
+					<li>From 20 to 45 seconds, tweets tagged @jPlayerOrg will appear below 'Twitter Area'.</li>
 					<li>From 5 to 15 seconds, the Mozilla Drumbeat logo will appear below 'Image Area'.</li>
 					<li>From 5 to 15 seconds, the subtitle 'This is overlaid on top of the video. You can hightlight it!' will appear in front of the video.</li>
-					<li>From 0 to 20 seconds, blogs from 'http://zenit.senecac.on.ca/~chris.tyler/planet/rss20.xml' will appear below 'Google Feed Area'.</li>
+					<li>From 0 to 20 seconds, blogs from 'http://happyworm.com/blog/feed/rss/' will appear below 'Google Feed Area'.</li>
 					<li>From 0 to 15 seconds, the site 'http://webmademovies.org/' will appear below 'Web Page Area'.</li>
 				</ul>
 			</div>
 			<div id="footnotediv" width="50%" height="50%">
 				<strong>Footnote Area</strong><br />
-			</div>
-			<div id="attribdiv" width="50%" height="50%">
-				<strong>Attributions Area</strong><br />
 			</div>
 			<div id="flickrdiv" width="50%" height="50%">
 				<strong>Flickr Area</strong><br />

@@ -22,7 +22,8 @@
 
 (function(Popcorn) {
 
-	var jQueryDownloading = false,
+	var DEBUG = false, // Decided to leave the debugging option and console output in for the time being. Overhead is trivial.
+	jQueryDownloading = false,
 	jPlayerDownloading = false,
 	format = { // Duplicate of jPlayer 2.2.0 object, to avoid always requiring jQuery and jPlayer to be loaded before performing the _canPlayType() test.
 		mp3: {
@@ -116,7 +117,7 @@
 				}
 			}
 		}
-		console.log('getSupplied(): Generated: supplied = "' + supplied + '"');
+		if(DEBUG) console.log('getSupplied(): Generated: supplied = "' + supplied + '"');
 		return supplied;
 	};
 
@@ -217,11 +218,10 @@
 
 			dispatchDurationChange = function() {
 				if(ready) {
-					console.log('Dispatched event : durationchange : ' + duration);
-					// jPlayerObj._trigger($.jPlayer.event.durationchange); // Loops to oblivion!
+					if(DEBUG) console.log('Dispatched event : durationchange : ' + duration);
 					media.dispatchEvent('durationchange');
 				} else {
-					console.log('DELAYED EVENT (!ready) : durationchange : ' + duration);
+					if(DEBUG) console.log('DELAYED EVENT (!ready) : durationchange : ' + duration);
 					clearTimeout(durationchangeId); // Stop multiple triggers causing multiple timeouts running in parallel.
 					durationchangeId = setTimeout(dispatchDurationChange, 250);
 				}
@@ -274,7 +274,7 @@
 					if(!canplaythrough && event.jPlayer.status.seekPercent === 100) {
 						canplaythrough = true;
 						setTimeout(function() {
-							console.log('Trigger : canplaythrough');
+							if(DEBUG) console.log('Trigger : canplaythrough');
 							jPlayerObj._trigger($.jPlayer.event.canplaythrough);
 						}, 0);
 					}
@@ -282,7 +282,7 @@
 
 				myPlayer.bind($.jPlayer.event.loadstart, function() {
 					setTimeout(function() {
-						console.log('Trigger : loadeddata');
+						if(DEBUG) console.log('Trigger : loadeddata');
 						jPlayerObj._trigger($.jPlayer.event.loadeddata);
 					}, 0);
 				})
@@ -296,12 +296,12 @@
 				})
 				.bind($.jPlayer.event.play, function() {
 					setTimeout(function() {
-						console.log('Trigger : playing');
+						if(DEBUG) console.log('Trigger : playing');
 						jPlayerObj._trigger($.jPlayer.event.playing);
 					}, 0);
 				});
 
-				console.log('Created CUSTOM event handlers for FLASH');
+				if(DEBUG) console.log('Created CUSTOM event handlers for FLASH');
 			},
 
 			jPlayerInit = function() {
@@ -344,10 +344,10 @@
 
 					var bindEvent = function(name) {
 						myPlayer.bind($.jPlayer.event[name], function(event) {
-							console.log('Dispatched event: ' + name + (event && event.jPlayer ? ' (' + event.jPlayer.status.currentTime + 's)' : '')); // Must be after dispatch for some reason on Firefox/Opera
+							if(DEBUG) console.log('Dispatched event: ' + name + (event && event.jPlayer ? ' (' + event.jPlayer.status.currentTime + 's)' : '')); // Must be after dispatch for some reason on Firefox/Opera
 							media.dispatchEvent(name);
 						});
-						console.log('Created event handler for: ' + name);
+						if(DEBUG) console.log('Created event handler for: ' + name);
 					};
 
 					for(var eventName in $.jPlayer.event) {
@@ -364,23 +364,23 @@
 							if(nativeEvent) {
 								bindEvent(eventName);
 							} else {
-								console.log('Skipped auto event handler creation for: ' + eventName);
+								if(DEBUG) console.log('Skipped auto event handler creation for: ' + eventName);
 							}
 						}
 					}
 
 					myPlayer.bind($.jPlayer.event.loadeddata, function(event) {
-						console.log('Dispatched event: loadeddata' + (event && event.jPlayer ? ' (' + event.jPlayer.status.currentTime + 's)' : ''));
+						if(DEBUG) console.log('Dispatched event: loadeddata' + (event && event.jPlayer ? ' (' + event.jPlayer.status.currentTime + 's)' : ''));
 						media.dispatchEvent('loadeddata');
 						ready = true;
 					});
-					console.log('Created CUSTOM event handler for: loadeddata');
+					if(DEBUG) console.log('Created CUSTOM event handler for: loadeddata');
 
 					myPlayer.bind($.jPlayer.event.durationchange, function(event) {
 						duration = event.jPlayer.status.duration;
 						dispatchDurationChange();
 					});
-					console.log('Created CUSTOM event handler for: durationchange');
+					if(DEBUG) console.log('Created CUSTOM event handler for: durationchange');
 
 					// The error event is a special case. Plus jPlayer error event assumes it is a broken URL. (It could also be a decoder error... Or aborted or a Network error.)
 					myPlayer.bind($.jPlayer.event.error, function(event) {
@@ -395,11 +395,11 @@
 							error.code = 0; // It was a jPlayer error, not an HTML5 media error.
 						}
 
-						console.log('Dispatched event: error');
-						console.dir(error);
+						if(DEBUG) console.log('Dispatched event: error');
+						if(DEBUG) console.dir(error);
 						media.dispatchEvent('error');
 					});
-					console.log('Created CUSTOM event handler for: error');
+					if(DEBUG) console.log('Created CUSTOM event handler for: error');
 
 					Popcorn.player.defineProperty( media, 'error', {
 						set: function() {
@@ -423,16 +423,11 @@
 								} else {
 									myPlayer.jPlayer('play', val);
 								}
-								// Only do this for the flash after testing it solves prob
-								// console.log('Trigger : seeked');
-								// myPlayer.trigger($.jPlayer.event.seeked);
-								// console.log('(set) typeof currentTime: ' + typeof val);
 								return val;
 							}
 						},
 						get: function() {
 							if(!options.destroyed) {
-								// console.log('(get) typeof currentTime: ' + typeof myPlayer.data('jPlayer').status.currentTime);
 								return jPlayerObj.status.currentTime;
 							}
 						}
