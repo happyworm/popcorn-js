@@ -189,4 +189,13 @@
       return -1;
     }
   }
+
+  if(!String.prototype.trim) {
+    String.prototype.trim = function() {
+      if ( this == null ) {
+        throw new TypeError();
+      }
+      return this.replace(/^\s+|\s+$/g, "");
+    };
+  }
 })();
