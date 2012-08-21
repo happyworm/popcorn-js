@@ -22,28 +22,41 @@
 			
 			document.addEventListener( 'DOMContentLoaded', function() {
 				var paused = true,
-				media = {
-					m4v: 'http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v',
-					webmv: 'http://www.jplayer.org/video/webm/Big_Buck_Bunny_Trailer.webm',
-					poster: "http://www.jplayer.org/video/poster/Big_Buck_Bunny_Trailer_480x270.png",
-					// solution:"html,flash",
-					supplied: "m4v,webmv"
-				},
-				options = {
-					poster: "http://www.jplayer.org/video/poster/Big_Buck_Bunny_Trailer_480x270.png",
-					size: {
-						width: "640px",
-						height: "360px",
-						cssClass: "jp-video-360p"
+				srcObject = {
+					media: {
+						m4v: 'http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v',
+						webmv: 'http://www.jplayer.org/video/webm/Big_Buck_Bunny_Trailer.webm',
+						poster: "http://www.jplayer.org/video/poster/Big_Buck_Bunny_Trailer_480x270.png"
 					},
-					autohide: {full: false}
+					options: {
+						// solution:"flash,html", // To use Flash with an HTML5 fallback. Default: "html,flash"
+						supplied: "m4v,webmv", // Define the media formats supplied in the media object. Order matches priority.
+						// supplied: "webmv,m4v",
+						size: {
+							width: "640px",
+							height: "360px",
+							cssClass: "jp-video-360p"
+						},
+						autohide: {full: false}
+					}
 				},
+				DEBUG = true,
 				popcorn;
 
-				// A test during dev...
-				// console.dir(Popcorn.jplayer.canPlayType('div', media)); // Works with Object or String.
+				// A testing during dev...
+				// Popcorn.jplayer.canPlayType('div', SRC) // Works with Object or String.
+				if(DEBUG) {
+					console.log('The canPlayType result varies cross-browser.');
+					console.log('canPlayType(srcObject)', Popcorn.jplayer.canPlayType('div', srcObject)); // Using an Object.
+					console.log('canPlayType(srcObject.media.m4v)', Popcorn.jplayer.canPlayType('div', srcObject.media.m4v)); // Using a String.
+					console.log('canPlayType(srcObject.media.webmv)', Popcorn.jplayer.canPlayType('div', srcObject.media.webmv)); // Using a String.
+					console.log('canPlayType({})', Popcorn.jplayer.canPlayType('div', {})); // Testing empty Object
+					console.log('canPlayType("")', Popcorn.jplayer.canPlayType('div', '')); // Testing empty String
+				}
 
-				popcorn = Popcorn.jplayer('#video', media, options); // remove options - deprecated.
+				popcorn = Popcorn.jplayer('#video', srcObject); // Instance using an SRC Object, containing the media and options objects.
+				// popcorn = Popcorn.jplayer('#video', srcObject.media.m4v); // Optional way of instancing using an M4V url String.
+				// popcorn = Popcorn.jplayer('#video'); // Optional way of instancing using the SRC attribute of the HTML div element.
 
 				popcorn = popcorn
 					.footnote({
@@ -154,6 +167,7 @@
 			<div>
 				<!-- A jPlayer GUI skin could be inserted here in the normal manner if you wanted to use one. -->
 				<div id="video" style="background:#000;"></div>
+				<!-- <div id="video" style="background:#000;" src="http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v"></div> -->
 				<button class="simple" id="btn-play-pause">Play</button>
 				<button class="seek" id="btn-seek">Seek to 30</button>
 				<button class="volume" id="btn-volume">Toggle Volume</button>

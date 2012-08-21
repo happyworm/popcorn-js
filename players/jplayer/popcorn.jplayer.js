@@ -9,7 +9,7 @@
  *
  * Author: Mark J Panaghiston
  * Version: 0.1.0
- * Date: 20th August 2012
+ * Date: 21st August 2012
  *
  * For jPlayer Version: 2.1.0 (It will be for 2.2.0 once that is online)
  * Requires: jQuery 1.3.2+
@@ -22,9 +22,13 @@
 
 (function(Popcorn) {
 
-	var DEBUG = false, // Decided to leave the debugging option and console output in for the time being. Overhead is trivial.
-	jQueryDownloading = false,
-	jPlayerDownloading = false,
+	var JQUERY_SCRIPT = 'http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js', // Used if jQuery not already present.
+	JPLAYER_SCRIPT = 'http://www.jplayer.org/2.1.0/js/jquery.jplayer.min.js', // Used if jPlayer not already present.
+	JPLAYER_SWFPATH = 'http://www.jplayer.org/2.1.0/js/Jplayer.swf', // Used if not specified in jPlayer options via SRC Object.
+	SOLUTION = 'html,flash', // The default solution option.
+	DEBUG = false, // Decided to leave the debugging option and console output in for the time being. Overhead is trivial.
+	jQueryDownloading = false, // Flag to stop multiple instances from each pulling in jQuery, thus corrupting it.
+	jPlayerDownloading = false, // Flag to stop multiple instances from each pulling in jPlayer, thus corrupting it.
 	format = { // Duplicate of jPlayer 2.2.0 object, to avoid always requiring jQuery and jPlayer to be loaded before performing the _canPlayType() test.
 		mp3: {
 			codec: 'audio/mpeg; codecs="mp3"',
@@ -87,7 +91,14 @@
 			media: 'video'
 		}
 	},
-	getMediaType = function(url) {
+	isObject = function(val) { // Basic check for Object
+		if(val && typeof val === 'object' && val.hasOwnProperty) {
+			return true;
+		} else {
+			return false;
+		}
+	},
+	getMediaType = function(url) { // Function to gleam the media type from the URL
 		var mediaType = false;
 		if(/\.mp3$/i.test(url)) {
 			mediaType = 'mp3';
@@ -104,11 +115,10 @@
 		}
 		return mediaType;
 	},
-	getSupplied = function(url) {
+	getSupplied = function(url) { // Function to generate a supplied option from an src object. ie., When supplied not specified.
 		var supplied = '',
 		separator = '';
-		// Basic check for Object
-		if(url && url.hasOwnProperty) {
+		if(isObject(url)) {
 			// Generate supplied option from object's properties. Non-format properties would be ignored by jPlayer. Order is unpredictable.
 			for(var prop in url) {
 				if(url.hasOwnProperty(prop)) {
@@ -126,43 +136,52 @@
 			// url : Either a String or an Object structured similar a jPlayer media object. ie., As used by setMedia in jPlayer.
 			// The url object may also contain a solution and supplied property.
 
+			// Define the src object structure here!
+
 			var cType = containerType.toLowerCase(),
-			srcObj = {},
+			srcObj = {
+				media:{},
+				options:{},
+			},
 			rVal = false, // Only a boolean false means it is not supported.
 			mediaType;
 
 			if(cType !== 'video' && cType !== 'audio') {
 
 				if(typeof url === 'string') {
-					// Check it starts with http, so the URL is absolute... Well, it ain't a perfect check.
+					// Check it starts with http, so the URL is absolute... Well, it is not a perfect check.
 					if(/^http.*/i.test(url)) {
 						mediaType = getMediaType(url);
 						if(mediaType) {
-							srcObj[mediaType] = url;
-							srcObj.solution = 'html,flash';
-							srcObj.supplied = mediaType;
+							srcObj.media[mediaType] = url;
+							srcObj.options.solution = SOLUTION;
+							srcObj.options.supplied = mediaType;
 						}
 					}
 				} else {
-					srcObj = url; // Assume the url is an object.
+					srcObj = url; // Assume the url is an src object.
 				}
 
-				// Check the srcObj is indeed an Object before we start poking it.
-				if(srcObj.hasOwnProperty) {
+				// Check for Object and appropriate minimum data structure.
+				if(isObject(srcObj) && isObject(srcObj.media)) {
 
-					if(!srcObj.solution) {
-						srcObj.solution = 'html,flash';
+					if(!isObject(srcObj.options)) {
+						srcObj.options = {};
 					}
 
-					if(!srcObj.supplied) {
-						srcObj.supplied = getSupplied(url);
+					if(!srcObj.options.solution) {
+						srcObj.options.solution = SOLUTION;
+					}
+
+					if(!srcObj.options.supplied) {
+						srcObj.options.supplied = getSupplied(srcObj.media);
 					}
 
 					// Figure out how jPlayer will play it.
 					// This may not work properly when both audio and video is supplied. ie., A media player. But it should return truethy and jPlayer can figure it out.
 					
-					var solution = srcObj.solution.toLowerCase().split(","), // Create the solution array, with prority based on the order of the solution string.
-					supplied = srcObj.supplied.toLowerCase().split(","); // Create the supplied formats array, with prority based on the order of the supplied formats string.
+					var solution = srcObj.options.solution.toLowerCase().split(","), // Create the solution array, with prority based on the order of the solution string.
+					supplied = srcObj.options.supplied.toLowerCase().split(","); // Create the supplied formats array, with prority based on the order of the supplied formats string.
 
 					for(var sol = 0; sol < solution.length; sol++) {
 
@@ -201,15 +220,14 @@
 			}
 			return rVal;
 		},
-		_setup: function( options ) {
-
-			// Warning: options is deprecated.
-
+		// _setup: function( options ) { // Warning: options is deprecated.
+		_setup: function() {
 			var media = this,
 			myPlayer, // The jQuery selector of the jPlayer element. Usually a <div>
 			jPlayerObj, // The jPlayer data instance. For performance and DRY code.
 			mediaType = 'unknown',
 			jpMedia = {},
+			jpOptions = {},
 			ready = false, // Used during init to override the annoying duration dependance in the track event padding during Popcorn's isReady(). ie., We is ready after loadeddata and duration can then be set real value at leisure.
 			duration = 0, // For the durationchange event with both HTML5 and Flash solutions. Used with 'ready' to keep control during the Popcorn isReady() via loadeddata event. (Duration=0 is bad.)
 			durationchangeId = null, // A timeout ID used with delayed durationchange event. (Because of the duration=NaN fudge to avoid Popcorn track event corruption.)
@@ -306,24 +324,23 @@
 
 			jPlayerInit = function() {
 				(function($) {
-					options = options || {};
 
 					myPlayer = $('#' +  media.id);
 
 					if(typeof media.src === 'string') {
 						mediaType = getMediaType(media.src);
 						jpMedia[mediaType] = media.src;
-						options.supplied = mediaType; // Force the supplied option, just in case it was set in the options.
-						// options.solution = 'flash,html'; // TMP FOR TESTING!!!
-					} else {
-						jpMedia = media.src;
-						options.solution = media.src.solution ? media.src.solution : 'html,flash';
-						options.supplied = media.src.supplied ? media.src.supplied : getSupplied(media.src);
+						jpOptions.supplied = mediaType;
+						jpOptions.solution = SOLUTION;
+					} else if(isObject(media.src)) {
+						jpMedia = isObject(media.src.media) ? media.src.media : {};
+						jpOptions = isObject(media.src.options) ? media.src.options : {};
+						jpOptions.solution = jpOptions.solution || SOLUTION;
+						jpOptions.supplied = jpOptions.supplied || getSupplied(media.src.media);
 					}
 
 					// Allow the swfPath to be set to local server. ie., If the jPlayer Plugin is local and already on the page, then you can also use the local SWF.
-					// NB: This will need to come through on the first SRC object used during instancing.
-					options.swfPath = options.swfPath || 'http://www.jplayer.org/2.1.0/js/Jplayer.swf';
+					jpOptions.swfPath = jpOptions.swfPath || JPLAYER_SWFPATH;
 
 					myPlayer.bind($.jPlayer.event.ready, function(event) {
 						if(event.jPlayer.flash.used) {
@@ -404,32 +421,24 @@
 					Popcorn.player.defineProperty( media, 'error', {
 						set: function() {
 							// Read-only property
-							if(!options.destroyed) {
-								return error;
-							}
+							return error;
 						},
 						get: function() {
-							if(!options.destroyed) {
-								return error;
-							}
+							return error;
 						}
 					});
 
 					Popcorn.player.defineProperty( media, 'currentTime', {
 						set: function( val ) {
-							if(!options.destroyed) {
-								if(jPlayerObj.status.paused) {
-									myPlayer.jPlayer('pause', val);
-								} else {
-									myPlayer.jPlayer('play', val);
-								}
-								return val;
+							if(jPlayerObj.status.paused) {
+								myPlayer.jPlayer('pause', val);
+							} else {
+								myPlayer.jPlayer('play', val);
 							}
+							return val;
 						},
 						get: function() {
-							if(!options.destroyed) {
-								return jPlayerObj.status.currentTime;
-							}
+							return jPlayerObj.status.currentTime;
 						}
 					});
 
@@ -449,14 +458,14 @@
 					Popcorn.player.defineProperty( media, 'duration', {
 						set: function() {
 							// Read-only property
-							if(!options.destroyed && ready) {
+							if(ready) {
 								return duration;
 							} else {
 								return NaN;
 							}
 						},
 						get: function() {
-							if(!options.destroyed && ready) {
+							if(ready) {
 								return duration; // Popcorn has initialized, we can now use duration zero or whatever without fear.
 							} else {
 								return NaN; // Keep the duration a NaN until after loadeddata event has occurred. Otherwise Popcorn track event padding is corrupted.
@@ -466,58 +475,42 @@
 
 					Popcorn.player.defineProperty( media, 'muted', {
 						set: function( val ) {
-							if(!options.destroyed) {
-								myPlayer.jPlayer('mute', val);
-								return jPlayerObj.options.muted;
-							}
+							myPlayer.jPlayer('mute', val);
+							return jPlayerObj.options.muted;
 						},
 						get: function() {
-							if(!options.destroyed) {
-								return jPlayerObj.options.muted;
-							}
+							return jPlayerObj.options.muted;
 						}
 					});
 
 					Popcorn.player.defineProperty( media, 'volume', {
 						set: function( val ) {
-							if(!options.destroyed) {
-								myPlayer.jPlayer('volume', val);
-								return jPlayerObj.options.volume;
-							}
+							myPlayer.jPlayer('volume', val);
+							return jPlayerObj.options.volume;
 						},
 						get: function() {
-							if(!options.destroyed) {
-								return jPlayerObj.options.volume;
-							}
+							return jPlayerObj.options.volume;
 						}
 					});
 
 					Popcorn.player.defineProperty( media, 'paused', {
 						set: function() {
 							// Read-only property
-							if(!options.destroyed) {
-								return jPlayerObj.status.paused;
-							}
+							return jPlayerObj.status.paused;
 						},
 						get: function() {
-							if(!options.destroyed) {
-								return jPlayerObj.status.paused;
-							}
+							return jPlayerObj.status.paused;
 						}
 					});
 
 					media.play = function() {
-						if(!options.destroyed) {
-							myPlayer.jPlayer('play');
-						}
+						myPlayer.jPlayer('play');
 					};
 					media.pause = function() {
-						if(!options.destroyed) {
-							myPlayer.jPlayer('pause');
-						}
+						myPlayer.jPlayer('pause');
 					};
 
-					myPlayer.jPlayer(options); // Instance jPlayer. Note that the options should not have a ready event defined... Kill it by default?
+					myPlayer.jPlayer(jpOptions); // Instance jPlayer. Note that the options should not have a ready event defined... Kill it by default?
 					jPlayerObj = myPlayer.data('jPlayer');
 
 				}(jQuery));
@@ -527,7 +520,7 @@
 				if (!jQuery.jPlayer) {
 					if (!jPlayerDownloading) {
 						jPlayerDownloading = true;
-						Popcorn.getScript("http://www.jplayer.org/2.1.0/js/jquery.jplayer.min.js", function() {
+						Popcorn.getScript(JPLAYER_SCRIPT, function() {
 							jPlayerDownloading = false;
 							jPlayerInit();
 						});
@@ -543,7 +536,7 @@
 				if (!window.jQuery) {
 					if (!jQueryDownloading) {
 						jQueryDownloading = true;
-						Popcorn.getScript("http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js", function() {
+						Popcorn.getScript(JQUERY_SCRIPT, function() {
 							jQueryDownloading = false;
 							jPlayerCheck();
 						});
@@ -557,8 +550,7 @@
 
 			jQueryCheck();
 		},
-		_teardown: function( options ) {
-			options.destroyed = true;
+		_teardown: function() {
 			jQuery('#' +  this.id).jPlayer('destroy');
 		}
 	});
