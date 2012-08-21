@@ -23,20 +23,13 @@
 			
 			document.addEventListener( 'DOMContentLoaded', function() {
 				var paused = true,
-				media = [{ // Supplied option only read during instancing and cannot be changed. ie., All media SRC objects must contain URLs for each supplied format.
+				media = { // Supplied option only read during instancing and cannot be changed. ie., All media SRC objects must contain URLs for each supplied format.
 					m4v: 'http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v',
 					webmv: 'http://www.jplayer.org/video/webm/Big_Buck_Bunny_Trailer.webm',
 					poster: "http://www.jplayer.org/video/poster/Big_Buck_Bunny_Trailer_480x270.png",
 					// solution:"html,flash",
-					// supplied: "m4v,webmv"
-				}, {
-					m4v: 'http://www.jplayer.org/video/m4v/Incredibles_Teaser.m4v',
-					webmv: 'http://www.jplayer.org/video/webm/Incredibles_Teaser.webm',
-					poster: "http://www.jplayer.org/video/poster/Big_Buck_Bunny_Trailer_480x270.png", // Correct this one.
-					solution:"html,flash",
 					supplied: "m4v,webmv"
-				}],
-				source = media[1],
+				},
 				options = {
 					poster: "http://www.jplayer.org/video/poster/Big_Buck_Bunny_Trailer_480x270.png",
 					size: {
@@ -48,25 +41,10 @@
 				},
 				popcorn;
 
-/*
-				// Using the canPlayType method to determine whether HTML5 can play the media, otherwise Flash would be used.
-				// Only the last clause is required, the other clauses are there to get the browser to use an html solution.
-				if(Popcorn.jplayer.canPlayType('div', source.m4v).html) {
-					// HTML5 can play M4V in this browser.
-					popcorn = Popcorn.jplayer('#video', source.m4v, options);
-				} else if(Popcorn.jplayer.canPlayType('div', source.webmv).html) {
-					// HTML5 can play WEBM in this browser.
-					popcorn = Popcorn.jplayer('#video', source.webmv, options);
-				} else {
-					// Otherwise jPlayer will be able to play the M4V using the Flash solution.
-					popcorn = Popcorn.jplayer('#video', source.m4v, options);
-				}
-*/
-
 				// A test during dev...
-				console.dir(Popcorn.jplayer.canPlayType('div', media[0])); // Works with Object or String.
+				// console.dir(Popcorn.jplayer.canPlayType('div', media)); // Works with Object or String.
 
-				popcorn = Popcorn.jplayer('#video', media[0], options); // remove .m4v after dev testing... ie., when i write the code for instancing an srcObj.
+				popcorn = Popcorn.jplayer('#video', media, options); // remove options - deprecated.
 
 				popcorn = popcorn
 					.footnote({
@@ -179,14 +157,6 @@
 					popcorn.mute( !popcorn.media.muted );
 				}, false);
 
-				element('media-a').addEventListener('click', function() {
-					popcorn.src( media[0] );
-				}, false);
-
-				element('media-b').addEventListener('click', function() {
-					popcorn.src( media[1] );
-				}, false);
-
 			}, false );
 		</script>
 	</head>
@@ -198,9 +168,7 @@
 				<button class="simple" id="btn-play-pause">Play</button>
 				<button class="seek" id="btn-seek">Seek to 30</button>
 				<button class="volume" id="btn-volume">Toggle Volume</button>
-				<button class="mute" id="btn-mute">Toggle Mute</button><br />
-				<button id="media-a">media(A)</button>
-				<button id="media-b">media(B)</button>
+				<button class="mute" id="btn-mute">Toggle Mute</button>
 				<div>
 					<ul>
 						<li>Status: <span id="player-status">Not Ready</span></li>

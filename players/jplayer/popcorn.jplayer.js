@@ -313,7 +313,6 @@
 					if(typeof media.src === 'string') {
 						mediaType = getMediaType(media.src);
 						jpMedia[mediaType] = media.src;
-						// jpMedia.poster = options.poster;
 						options.supplied = mediaType; // Force the supplied option, just in case it was set in the options.
 						// options.solution = 'flash,html'; // TMP FOR TESTING!!!
 					} else {
