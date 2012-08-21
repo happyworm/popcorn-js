@@ -56,7 +56,6 @@
 
 				popcorn = Popcorn.jplayer('#video', srcObject); // Instance using an SRC Object, containing the media and options objects.
 				// popcorn = Popcorn.jplayer('#video', srcObject.media.m4v); // Optional way of instancing using an M4V url String.
-				// popcorn = Popcorn.jplayer('#video'); // Optional way of instancing using the SRC attribute of the HTML div element.
 
 				popcorn = popcorn
 					.footnote({
@@ -167,7 +166,6 @@
 			<div>
 				<!-- A jPlayer GUI skin could be inserted here in the normal manner if you wanted to use one. -->
 				<div id="video" style="background:#000;"></div>
-				<!-- <div id="video" style="background:#000;" src="http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v"></div> -->
 				<button class="simple" id="btn-play-pause">Play</button>
 				<button class="seek" id="btn-seek">Seek to 30</button>
 				<button class="volume" id="btn-volume">Toggle Volume</button>
@@ -193,8 +191,8 @@
 					The jPlayer player is chromeless (hidden controls), but the controls may be added using the standard jPlayer mechanism described at <a href="http://jplayer.org">jplayer.org</a>.<br />
 					Basically, the skin would be done in the normal manner, but the Popcorn jPlayer player instances jPlayer on your jPlayer DIV instead of the usual commands to instance jPlayer.<br />
 					Clicking play/pause or seeking in either the video or via custom controls will cause the other to update.<br />
-					The video/audio can be specified in the HTML source by giving the media url (http://www.domain.com/media/video.m4v) to either Popcorn.jplayer <b>or as the div src attribute</b>.<br/>
-					Alternatively, the video/audio can be specified in the HTML source by giving the media url object to Popcorn.jplayer.
+					The video/audio can be specified in the HTML source by giving the media url (http://www.domain.com/media/video.m4v) to Popcorn.jplayer.<br/>
+					Alternatively, the video/audio can be specified in the HTML source by giving the SRC Object to Popcorn.jplayer, which contains a media and options Object.
 				</p>
 				<h4>Expected Events</h4>
 				<ul>
