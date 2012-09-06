@@ -968,11 +968,12 @@
 
   // Internal Only - Adds track events to the instance object
   Popcorn.addTrackEvent = function( obj, track ) {
-    var trackEvent, isUpdate, eventType;
+    var trackEvent, isUpdate, eventType,
+        id = track.id || track._id;
 
     // Do a lookup for existing trackevents with this id
-    if ( track.id ) {
-      trackEvent = obj.getTrackEvent( track.id );
+    if ( id ) {
+      trackEvent = obj.getTrackEvent( id );
     }
 
     // If a track event by this id currently exists, modify it
@@ -983,7 +984,7 @@
       track = Popcorn.extend( {}, trackEvent, track );
 
       // Remove the existing track from the instance
-      obj.removeTrackEvent( track.id );
+      obj.removeTrackEvent( id );
     }
 
     // Determine if this track has default options set for it
@@ -1000,6 +1001,9 @@
 
       //  Push track event ids into the history
       obj.data.history.push( track._id );
+
+      // Trigger _setup method if exists
+      track._natives._setup && track._natives._setup.call( this, track );
     }
 
     track.start = Popcorn.util.toSeconds( track.start, obj.options.framerate );
@@ -1653,9 +1657,6 @@
         // ensure an initial id is there before setup is called
         options._id = Popcorn.guid( options._natives.type );
       }
-
-      // Trigger _setup method if exists
-      options._natives._setup && options._natives._setup.call( this, options );
 
       // Create new track event for this instance
       Popcorn.addTrackEvent( this, options );

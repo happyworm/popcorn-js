@@ -2271,89 +2271,91 @@ asyncTest( "Special track event listeners: trackstart, trackend", function() {
     }
   }
 
-  $pop.pause().currentTime( 0 );
-
   Popcorn.plugin( "emitter", {
     start: function() {},
     end: function() {}
   });
 
-  $pop.emitter({
-    start: 1,
-    end: 3,
-    direction: "forward"
-  }).emitter({
-    start: 4,
-    end: 6,
-    direction: "backward"
-  }).on( "trackstart", function( event ) {
+  $pop.on( "canplayall", function() {
+    $pop.pause( 0 );
 
-    if ( event.plugin === "cue" ) {
-      ok( !event.direction, "trackstart no plugin specific data on cue" );
-      plus();
+    $pop.emitter({
+      start: 1,
+      end: 3,
+      direction: "forward"
+    }).emitter({
+      start: 4,
+      end: 6,
+      direction: "backward"
+    }).on( "trackstart", function( event ) {
 
-      equal( event._running, true, "cue event is running on trackstart" );
-      plus();
+      if ( event.plugin === "cue" ) {
+        ok( !event.direction, "trackstart no plugin specific data on cue" );
+        plus();
 
-      equal( event.type, "trackstart", "cue special trackstart event object includes correct type" );
-      plus();
+        equal( event._running, true, "cue event is running on trackstart" );
+        plus();
 
-      equal( event.plugin, "cue", "cue special trackstart event object includes correct plugin name" );
-      plus();
-    } else if ( event.plugin === "emitter" ) {
-      ok( event.direction, "a direction exsists with plugin specific data going " + event.direction );
-      plus();
+        equal( event.type, "trackstart", "cue special trackstart event object includes correct type" );
+        plus();
 
-      equal( event._running, true, "event is running on trackstart going " + event.direction );
-      plus();
+        equal( event.plugin, "cue", "cue special trackstart event object includes correct plugin name" );
+        plus();
+      } else if ( event.plugin === "emitter" ) {
+        ok( event.direction, "a direction exsists with plugin specific data going " + event.direction );
+        plus();
 
-      equal( event.type, "trackstart", "Special trackstart event object includes correct type going " + event.direction );
-      plus();
+        equal( event._running, true, "event is running on trackstart going " + event.direction );
+        plus();
 
-      equal( event.plugin, "emitter", "Special trackstart event object includes correct plugin name " + event.direction );
-      plus();
-    } else {
-      ok( false, "invalid plugin fired trackstart" );
-      plus();
-    }
+        equal( event.type, "trackstart", "Special trackstart event object includes correct type going " + event.direction );
+        plus();
 
-  }).on( "trackend", function( event ) {
+        equal( event.plugin, "emitter", "Special trackstart event object includes correct plugin name " + event.direction );
+        plus();
+      } else {
+        ok( false, "invalid plugin fired trackstart" );
+        plus();
+      }
 
-    if ( event.plugin === "cue" ) {
-      ok( !event.direction, "trackend no plugin specific data on cue" );
-      plus();
+    }).on( "trackend", function( event ) {
 
-      equal( event._running, false, "cue event is not running on trackend" );
-      plus();
+      if ( event.plugin === "cue" ) {
+        ok( !event.direction, "trackend no plugin specific data on cue" );
+        plus();
 
-      equal( event.type, "trackend", "cue special trackend event object includes correct type" );
-      plus();
+        equal( event._running, false, "cue event is not running on trackend" );
+        plus();
 
-      equal( event.plugin, "cue", "cue special trackend event object includes correct plugin name" );
-      plus();
-    } else if ( event.plugin === "emitter" ) {
-      ok( event.direction, "a direction exsists with plugin specific data going " + event.direction );
-      plus();
+        equal( event.type, "trackend", "cue special trackend event object includes correct type" );
+        plus();
 
-      equal( event._running, false, "event is not running on trackend going " + event.direction );
-      plus();
+        equal( event.plugin, "cue", "cue special trackend event object includes correct plugin name" );
+        plus();
+      } else if ( event.plugin === "emitter" ) {
+        ok( event.direction, "a direction exsists with plugin specific data going " + event.direction );
+        plus();
 
-      equal( event.type, "trackend", "Special trackend event object includes correct type " + event.direction );
-      plus();
+        equal( event._running, false, "event is not running on trackend going " + event.direction );
+        plus();
 
-      equal( event.plugin, "emitter", "Special trackend event object includes correct plugin name " + event.direction );
-      plus();
-    } else {
-      ok( false, "invalid plugin fired trackend" );
-    }
+        equal( event.type, "trackend", "Special trackend event object includes correct type " + event.direction );
+        plus();
 
-  }).cue( 4, function() {
-    $pop.pause().currentTime( 10 );
-  }).cue( 10, function() {
-    $pop.currentTime( 5 );
-  }).cue( 5, function() {
-    $pop.currentTime( 0 );
-  }).play();
+        equal( event.plugin, "emitter", "Special trackend event object includes correct plugin name " + event.direction );
+        plus();
+      } else {
+        ok( false, "invalid plugin fired trackend" );
+      }
+
+    }).cue( 4, function() {
+      $pop.pause().currentTime( 10 );
+    }).cue( 10, function() {
+      $pop.currentTime( 5 );
+    }).cue( 5, function() {
+      $pop.currentTime( 0 );
+    }).play();
+  });
 });
 
 test( "Range of track events #1015", 2, function() {
@@ -4435,6 +4437,65 @@ asyncTest( "Create empty cue and modify later", 5, function() {
 
     p.play( 9 );
   });
+
+});
+
+asyncTest( "Create empty trackevent w/o id and modify later", 2, function() {
+  var p = Popcorn( "#video" ),
+      id,
+      trackEvent,
+      numTrackEvents;
+
+  Popcorn.plugin( "testplugin", {} );
+
+  p.testplugin( { text: "Initial Text" } );
+
+  numTrackEvents = p.data.trackEvents.byStart.length;
+
+  id = p.getLastTrackEventId();
+
+  trackEvent = p.getTrackEvent( id );
+
+  p.testplugin( id, { text: "New Text" } );
+
+  trackEvent = p.getTrackEvent( id );
+
+  equal( p.data.trackEvents.byStart.length, numTrackEvents, "Modifying trackevent later didn't create extra trackevents." );
+  equal( trackEvent.text, "New Text", "Properly updated the trackevent with the value \"New Text\"" );
+
+  Popcorn.removePlugin( "testplugin" );
+  p.destroy();
+
+  start();
+});
+
+test( "Modify trackevent after creation call teardown/setup", 3, function() {
+  var p = Popcorn( "#video" ),
+      id,
+      count = 0;
+
+  Popcorn.plugin( "testplugin", {
+    _setup: function( options ) {
+      if ( ++count === 2 ) {
+        ok( true, "Setup was properly called." );
+        equal( options.text, "New Text", "Successfully passed the new options to the plugin for setup" );
+      }
+    },
+    start: function(){},
+    end: function(){},
+    _teardown: function( options ) {
+      ok( true, "Teardown was properly called" );
+    }
+  });
+
+  p.testplugin( { text: "Initial Text" } );
+
+  id = p.getLastTrackEventId();
+
+  p.testplugin( id, { text: "New Text" } );
+
+  Popcorn.removePlugin( "testplugin" );
+  p.destroy();
 
 });
 
